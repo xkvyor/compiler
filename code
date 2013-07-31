@@ -1,0 +1,31 @@
+import socket, select
+
+def handle(client, data):
+	print "[%s] %s" % client.getpeername(), data
+
+host = ''
+port = 1234
+server = socket.socket()
+server.bind((host, port))
+server.listen(5)
+
+sockets = [server]
+
+while True:
+	rl, wl, el = select.select(sockets, [], [])
+	for rs in rl:
+		if rs is server:
+			client, addr = rs.accept()
+			print 'Got a connection from', client.getpeername()
+			sockets.append(client)
+		else:
+			data = ''
+			while True:
+				buf = rs.recv(4096)
+				print len(buf)
+				if len(buf) == 0:
+					break
+				data += buf
+
+			handle(rs, data)
+
